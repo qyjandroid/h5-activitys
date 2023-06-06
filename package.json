@@ -1,0 +1,26 @@
+{
+  "name": "h5-activitys",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "cross-env BUILD_ACT=act1 vite --mode development",
+    "build": "tsc && vite build --mode production",
+    "build:test": "tsc && cross-env BUILD_ACT=act1 vite build --mode test",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "preact": "^10.13.2"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.5.0",
+    "@types/node": "^20.2.5",
+    "autoprefixer": "^10.4.14",
+    "cross-env": "^7.0.3",
+    "postcss-flexbugs-fixes": "^5.0.2",
+    "postcss-pxtorem": "^6.0.0",
+    "sass": "^1.62.1",
+    "typescript": "^5.0.2",
+    "vite": "^4.3.9"
+  }
+}
