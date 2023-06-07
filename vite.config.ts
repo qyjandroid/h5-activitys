@@ -3,6 +3,9 @@ import * as path from 'path';
 import postCssPxToRem from 'postcss-pxtorem'
 import autoprefixer from 'autoprefixer';
 import postcssFlexbugsFixes from 'postcss-flexbugs-fixes';
+import * as dotenv from 'dotenv';
+
+const { config: loadConfig } = dotenv;
 
 import * as fs from 'fs';
 import preact from '@preact/preset-vite';
@@ -10,11 +13,18 @@ import preact from '@preact/preset-vite';
 let { NODE_ENV = '', BUILD_ACT = '' } = process.env;
 
 
-
+const ENV_CONFIG_PATH =path.resolve(__dirname, 'env', `.env.${NODE_ENV}`);
+console.log("==ENV_CONFIG_PATH==",ENV_CONFIG_PATH)
+// vite 读取env 配置
+loadConfig({
+  path: ENV_CONFIG_PATH,
+});
 
 
 // 活动目录
 const PAGES_PATH = path.resolve(process.cwd(), 'src/activitys');
+
+
 
 
 const getActivitiesDefine = function getActivitiesDefine() {
@@ -45,6 +55,7 @@ const getEntries = function findEntries(isDev) {
 export default defineConfig(({command,mode,ssrBuild})=>{
   let emptyOutDir=false;
   console.log("mode===",mode);
+  console.log("env==",process.env.CDN_PATH);
   let isDev=mode==='development';
   if(!isDev){
     //清空打包目录
@@ -53,7 +64,7 @@ export default defineConfig(({command,mode,ssrBuild})=>{
   return {
     root:"./src/activitys",
     clearScreen:false,
-    base:"/",
+    base:process.env.CDN_PATH,
     cacheDir: path.resolve(__dirname, '.vite-cache'),
     build:{
       outDir:path.resolve(__dirname, 'dist'),
@@ -72,22 +83,32 @@ export default defineConfig(({command,mode,ssrBuild})=>{
         output:{
           entryFileNames:()=>{
             if(isDev){
-              return 'assets/entry-[name].js';
+              return 'entry-[name].js';
             }
             return `${BUILD_ACT}/[name].js`;
           },
           chunkFileNames: ()=>{
             if(isDev){
-              return 'assets/js/[name].js';
+              return 'js/[name].js';
             }
             return `${BUILD_ACT}/js/[name]-[hash].js`;
             
           },
-          assetFileNames: ()=>{
-            if(isDev){
-              return 'assets/[ext]/[name]-[hash].[ext]';
+          assetFileNames: (chunkInfo)=>{
+            let folder='[ext]';
+            if (chunkInfo.name) {
+              const [name, ext] = path.basename(chunkInfo.name).split('.');
+              if(ext.match(/(png|jpg|gif|webp|svg|jpeg)$/i)){
+                folder="images";
+              }else if(ext.match(/(woff|woff2|eot|ttf|otf)$/i)){
+                folder="fonts";
+              }
             }
-            return `${BUILD_ACT}/assets/[ext]/[name]-[hash].[ext]`;
+
+            if(isDev){
+              return `${folder}/[name]-[hash].[ext]`;
+            }
+            return `${BUILD_ACT}/${folder}/[name]-[hash].[ext]`;
             
           }
         },
@@ -95,7 +116,7 @@ export default defineConfig(({command,mode,ssrBuild})=>{
   
     },
     plugins: [preact()],
-    // envDir: path.resolve(__dirname, './env')
+    envDir: path.resolve(__dirname, './env'),
     resolve: { 
       alias: {
         '@':path.resolve(__dirname, "src"),
